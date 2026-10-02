@@ -2,15 +2,15 @@
 
 ## Method
 
-Prism performs binary vulnerability detection for smart contracts. It models two complementary views of each contract:
+Prism is a multi-view learning approach for smart contract vulnerability detection. It preserves complementary information from the Abstract Syntax Tree (AST), Control Flow Graph (CFG), and Data Flow Graph (DFG), deriving all three views from a shared normalized AST so that their nodes remain aligned.
 
-- The source-code view extracts an abstract syntax tree (AST), control-flow graph (CFG), and data-flow graph (DFG) from Solidity source code.
+The method has three stages:
 
-- The bytecode view extracts opcode sequences, a CFG, and a DFG from compiled EVM instructions.
+1. **Preprocessing.** Solidity source code is parsed into an AST. Identifiers are normalized, security-sensitive elements are annotated, and the annotations are propagated through the tree. The annotated AST is used to construct the AST, CFG, and DFG views.
 
-- The two views are processed by graph attention networks (GATs). During training, the source-code model acts as the teacher and knowledge distillation transfers its information to the bytecode model. Predictions from seven view configurations are then fused to produce the final classification.
+2. **View-specific learning.** A recursive neural network encodes the hierarchical AST view, while Graph Attention Networks encode the CFG and DFG views. Prism trains seven base learners for the individual views and all non-empty view combinations.
 
-The main entry point is `NewMain.py`, and the model implementations are in `gnnmodels/`. The train/test split is controlled by `ParameterConfig.dataset_split_ratio`, which defaults to 0.2 for the test set.
+3. **Full-stacking fusion.** The seven base learners generate out-of-fold predictions. A decision-tree meta-learner combines these predictions into the final vulnerability decision.
 
 ## Running the Project
 
