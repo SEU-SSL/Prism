@@ -34,6 +34,12 @@ class ParameterConfig(object):
     NUM_WORKERS = 4
     solcx.install_solc('v0.4.25')
     solcx.set_solc_version('v0.4.25')
+    ROOT = Path(__file__).resolve().parent
+    viewfile = str(ROOT / 'artifacts')
+    GAT_HIDDEN_DIM=128; HEAD_NUM=5; GAT_Layer_Num=1
+    GAT_FEAT_DP_RATE=0.; GAT_ATT_DP_RATE=0.; EMBEDDING_DIM=100
+    EPOCHES=200; BATCH_SIZE=128; dataset_split_ratio=.2; lr=1e-3
+    SEED=123; CFG_MIN_EDGE_NUM=1; PIN_MEM=False; NUM_WORKERS=0
     def log_config(prefix):
         with open(prefix + '#config', 'w') as f:
             f.write('EMBEDDING_DIM =' + str(ParameterConfig.EMBEDDING_DIM) + '\n')
