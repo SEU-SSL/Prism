@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.venv/
+.cache/
+/dataset/
+*.log
+*.pt
+*.pth
+*.pkl
+.DS_Store
