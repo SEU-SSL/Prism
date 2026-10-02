@@ -12,58 +12,32 @@ The method has three stages:
 
 3. **Full-stacking fusion.** The seven base learners generate out-of-fold predictions. A decision-tree meta-learner combines these predictions into the final vulnerability decision.
 
-## Running the Project
+#### Dataset
 
-1. Create a Python 3.8 environment and install the dependencies. The project is configured for CUDA 11.8 builds of PyTorch and DGL:
+The evaluation dataset is the manually validated smart-contract dataset released by Luo et al. and used by SCVHunter. It was derived from SmartBugs through keyword-based candidate selection followed by manual labeling. The benchmark contains 1,200 vulnerability-specific Solidity contracts: 300 for each of the four vulnerability types.
 
-   ```bash
+## Quick start
 
-   python3.8 -m venv .venv
+```bash
+python3.10 -m venv .venv
 
-   source .venv/bin/activate
+.venv/bin/python -m pip install torch==2.5.1
 
-   python -m pip install --upgrade "pip<25.1"
+.venv/bin/python -m pip install -r requirements.txt
+```
 
-   python -m pip install -r requirements.txt
+Prepare the Solidity sources, train the vulnerability-specific models, and predict one contract:
 
-   ```
+```bash
+.venv/bin/python -m prism prepare --data dataset/scvhunter --output artifacts/prepared
 
-2. Prepare the data directories. Place Solidity source files in `dataset/timestamp/` and preprocessed files in `dataset/TP/`:
+.venv/bin/python -m prism train --prepared artifacts/prepared/prepared.json \
 
-   ```text
+  --output artifacts/runs --device auto
 
-   dataset/
+.venv/bin/python -m prism predict --source path/to/contract.sol \
 
-   ├── timestamp/              # Solidity source files
+  --bundle artifacts/runs/reentrancy/seed-42/bundle.pt
+```
 
-   └── TP/
-
-       ├── dataset_S.json     # Source-code views and labels
-
-       ├── dataset_B.json     # Bytecode views and labels
-
-       ├── embs.npy            # Source-code token/node embeddings
-
-       └── embb.npy            # Bytecode opcode embeddings
-
-   ```
-
-   `dataset_S.json`, `dataset_B.json`, and both embedding files must use the same sample order and consistent labels. If the data is stored elsewhere, update `FF` and `viewfile` in `ParameterConfig.py`.
-
-3. Make Solidity compiler version `0.4.25` available. Importing `ParameterConfig.py` attempts to install and select this version.
-
-4. Run training and evaluation from the repository root:
-
-   ```bash
-
-   python NewMain.py
-
-   ```
-
-   The original implementation uses `cuda:0`, so a compatible NVIDIA GPU and CUDA environment are required.
-
-## Dataset Source
-
-This repository does not include the original Solidity contracts, labels, preprocessed JSON files, or NPY embeddings. These files must be prepared separately. The code defines the expected interface and default locations: source files are read from `dataset/timestamp/`, while paired source-code and bytecode features are read from `dataset/TP/dataset_S.json`, `dataset/TP/dataset_B.json`, `dataset/TP/embs.npy`, and `dataset/TP/embb.npy`.
-
-The repository files and configuration do not identify a public dataset name, download URL, or preprocessing script for these samples. To reproduce a paper or experiment dataset, obtain the original contracts and labels from the corresponding release and generate the files in the format described above; the default paths in this repository are not dataset download URLs.
+Install the Solidity compiler versions declared by the source files before preprocessing. Use `--device cpu` for CPU execution or `--device cuda` for an available NVIDIA GPU.
