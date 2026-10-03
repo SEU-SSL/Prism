@@ -12,7 +12,7 @@ The method has three stages:
 
 3. **Full-stacking fusion.** The seven base learners generate out-of-fold predictions. A decision-tree meta-learner combines these predictions into the final vulnerability decision.
 
-#### Dataset
+## Dataset
 
 The evaluation dataset is the manually validated smart-contract dataset released by Luo et al. and used by SCVHunter. It was derived from SmartBugs through keyword-based candidate selection followed by manual labeling. The benchmark contains 1,200 vulnerability-specific Solidity contracts: 300 for each of the four vulnerability types.
 
