@@ -16,28 +16,18 @@ The method has three stages:
 
 The evaluation dataset is the manually validated smart-contract dataset released by Luo et al. and used by SCVHunter. It was derived from SmartBugs through keyword-based candidate selection followed by manual labeling. The benchmark contains 1,200 vulnerability-specific Solidity contracts: 300 for each of the four vulnerability types.
 
-## Quick start
+## Quick Start
+
+From the `Prism` directory, install the dependencies:
 
 ```bash
-python3.10 -m venv .venv
-
-.venv/bin/python -m pip install torch==2.5.1
-
-.venv/bin/python -m pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
-Prepare the Solidity sources, train the vulnerability-specific models, and predict one contract:
+Then prepare the data and start training:
 
 ```bash
-.venv/bin/python -m prism prepare --data dataset/scvhunter --output artifacts/prepared
+python NewMain.py prepare --data dataset/scvhunter --task reentrancy --output artifacts/prepared
 
-.venv/bin/python -m prism train --prepared artifacts/prepared/prepared.json \
-
-  --output artifacts/runs --device auto
-
-.venv/bin/python -m prism predict --source path/to/contract.sol \
-
-  --bundle artifacts/runs/reentrancy/seed-42/bundle.pt
+python NewMain.py train --prepared artifacts/prepared.json --task reentrancy --device auto --epochs 1 --output artifacts/run
 ```
-
-Install the Solidity compiler versions declared by the source files before preprocessing. Use `--device cpu` for CPU execution or `--device cuda` for an available NVIDIA GPU.

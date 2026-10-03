@@ -16,7 +16,7 @@ class GATClassifier(nn.Module):
         self.merge = merge
         self.node_vec_stg = node_vec_stg
         if node_vec_stg != 'mean':
-            x = import_module('gnnmodels.' + node_vec_stg)
+            x = import_module('models.' + node_vec_stg)
             self.config = x.Config(embedding_matrix, hidden_dim, device)
             model = x.Model(self.config).to(device)
             if node_vec_stg != 'Transformer':

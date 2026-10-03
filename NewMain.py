@@ -899,7 +899,7 @@ from pathlib import Path
 import numpy as np, torch
 from ParameterConfig import ParameterConfig
 from data_processing import prepare as prep, load_bundle, build_sample
-from rvnn_gat.S_Model import S_Model
+from models.S_Model import S_Model
 
 def main():
  p=argparse.ArgumentParser(description='Prism-v4 SCVHunter source GNN'); sub=p.add_subparsers(dest='cmd',required=True)

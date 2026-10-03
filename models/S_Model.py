@@ -3,9 +3,9 @@ import torch as th
 import torch.nn as nn
 import torch.nn.functional as F
 
-from gnnmodels.BatchProgramClassifier import BatchProgramClassifier
+from models.BatchProgramClassifier import BatchProgramClassifier
 from ParameterConfig import ParameterConfig
-from gnnmodels.OptimizedGATClassifier import OptimizedGATClassifier
+from models.OptimizedGATClassifier import OptimizedGATClassifier
 import numpy as np
 
 
@@ -34,7 +34,7 @@ class S_Model(nn.Module):
         #[+]label_size=192->
         self.model3 = BatchProgramClassifier(embedding_dim=len(emb_ast[0]), hidden_dim=100, vocab_size=tokens_size+1, encode_dim=128,
                                              label_size=ParameterConfig.GAT_HIDDEN_DIM, batch_size=ParameterConfig.BATCH_SIZE,
-                                             use_gpu=True, pretrained_weight=emb_ast).to(device)
+                                             use_gpu=(device is not None and str(device).startswith("cuda")), pretrained_weight=emb_ast).to(device)
         #全连接层
         self.out_2 = nn.Linear(4, 2)
         self.out_3 = nn.Linear(6, 2)
@@ -77,11 +77,13 @@ class S_Model(nn.Module):
         # DFG GAT版本
         out1 = self.model1(edges_d) #torch.Size([batchsize(8), GAT_HIDDEN_DIM(128)])
         out1 = self.fc1(out1)
-        out1 = self.fc2(out1)#
+        out1 = self.fc2(out1)
+        if out1.dim() == 1: out1 = out1.unsqueeze(0)#
         # CFG GAT版本
         out2 = self.model2(edges_c)        
         out2 = self.fc1(out2)
-        out2 = self.fc2(out2)#
+        out2 = self.fc2(out2)
+        if out2.dim() == 1: out2 = out2.unsqueeze(0)#
         out3 = self.model3(nodes)
         out3 = self.fc1(out3)
         out3 = self.fc2(out3)#

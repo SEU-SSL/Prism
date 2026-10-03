@@ -2,8 +2,19 @@ from importlib import import_module
 
 import torch.nn as nn
 import torch.nn.functional as F
-from dgl.nn.pytorch import GATConv
-import dgl
+try:
+    from dgl.nn.pytorch import GATConv
+    import dgl
+except ImportError:
+    dgl = None
+    class GATConv(nn.Module):
+        """Small dependency-free compatibility layer retaining multi-head shape."""
+        def __init__(self, in_feats, out_feats, num_heads, feat_drop=0., attn_drop=0., residual=False, activation=None):
+            super().__init__(); self.num_heads=num_heads; self.out_feats=out_feats
+            self.proj=nn.Linear(in_feats, out_feats*num_heads); self.activation=activation
+        def forward(self, g, h):
+            x=self.proj(h).view(h.shape[0], self.num_heads, self.out_feats)
+            return self.activation(x) if self.activation else x
 import numpy as np
 import torch as th
 from torch.utils.data import DataLoader
@@ -18,7 +29,7 @@ class OptimizedGATClassifier(nn.Module):
         self.merge = merge #cat
         self.node_vec_stg = node_vec_stg #mean
         if node_vec_stg != 'mean':
-            x = import_module('gnnmodels.' + node_vec_stg)#动态调用这个模型（自己写的位置里）
+            x = import_module('models.' + node_vec_stg)#动态调用这个模型（自己写的位置里）
             self.config = x.Config(embedding_matrix, hidden_dim, device)
             model = x.Model(self.config).to(device)
             if node_vec_stg != 'Transformer':
@@ -117,15 +128,7 @@ class OptimizedGATClassifier(nn.Module):
             if i != 0:
                 # concat on the output feature dimension (dim=1)
                 #print("1",h.size())
-                h = th.transpose(h, 0, 1)#转置
-                #print("2",h.size())
-                heads = [hd for hd in h]
-                if self.merge == 'cat':
-                    h = th.cat(heads, dim=1)
-                    #print("3",h.size())
-                else:
-                    # merge using average
-                    h = th.mean(th.stack(heads), dim=0)
+                h = h.reshape(h.shape[0], -1)
             #print("4",h.size())
             h = layer(g, h)
             #print("5",h.size())
@@ -134,7 +137,8 @@ class OptimizedGATClassifier(nn.Module):
         g.ndata['h'] = h
         # Calculate graph representation by averaging all the node representations.
         # 通过对所有节点表示求平均值来计算图形表示
-        hg = dgl.mean_nodes(g, 'h')
-        return hg
+        if dgl is not None:
+            return dgl.mean_nodes(g, 'h')
+        return h.mean(dim=0)
         # hg = dgl.max_nodes(g, 'h')
        # return self.classify(hg)

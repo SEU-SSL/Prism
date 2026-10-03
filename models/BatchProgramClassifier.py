@@ -37,13 +37,13 @@ class BatchTreeEncoder(nn.Module):
         index, children_index = [], []
         current_node, children = [], []
         for i in range(size):
-            if node[i][0] is not -1:
+            if node[i][0] != -1:
                 index.append(i)
                 current_node.append(node[i][0])
                 temp = node[i][1:]
                 c_num = len(temp)
                 for j in range(c_num):
-                    if temp[j][0] is not -1:
+                    if temp[j][0] != -1:
                         if len(children_index) <= j:
                             children_index.append([i])
                             children.append([temp[j]])
@@ -68,7 +68,7 @@ class BatchTreeEncoder(nn.Module):
             if tree is not None:
                 batch_current += zeros.index_copy(0, Variable(self.th.LongTensor(children_index[c])), tree)
         batch_current = F.relu(batch_current)
-        batch_index = [i for i in batch_index if i is not -1]
+        batch_index = [i for i in batch_index if i != -1]
         b_in = Variable(self.th.LongTensor(batch_index))
         self.node_list.append(self.batch_node.index_copy(0, b_in, batch_current))
         return batch_current
